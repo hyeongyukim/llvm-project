@@ -28,6 +28,7 @@
 #include "llvm/Analysis/MemorySSAUpdater.h"
 #include "llvm/Analysis/MustExecute.h"
 #include "llvm/Analysis/ScalarEvolution.h"
+#include "llvm/Analysis/ValueTracking.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constant.h"
 #include "llvm/IR/Constants.h"
@@ -387,6 +388,10 @@ static bool unswitchTrivialBranch(Loop &L, BranchInst &BI, DominatorTree &DT,
   // When true, we're fully unswitching the branch rather than just unswitching
   // some input conditions to the branch.
   bool FullUnswitch = false;
+
+  auto Cond = BI.getCondition();
+  if (!isGuaranteedNotToBeUndefOrPoison(Cond))
+    BI.setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", &BI));
 
   if (L.isLoopInvariant(BI.getCondition())) {
     Invariants.push_back(BI.getCondition());
@@ -1976,6 +1981,11 @@ static void unswitchNontrivialInvariants(
   assert((SI || (BI && BI->isConditional())) &&
          "Can only unswitch switches and conditional branch!");
   bool FullUnswitch = SI || BI->getCondition() == Invariants[0];
+
+  auto Cond = BI->getCondition();
+  if (!isGuaranteedNotToBeUndefOrPoison(Cond))
+    BI->setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", BI));
+
   if (FullUnswitch)
     assert(Invariants.size() == 1 &&
            "Cannot have other invariants with full unswitching!");
