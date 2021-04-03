@@ -814,7 +814,8 @@ inner_loop_begin:
 ; CHECK-NEXT:    %[[A_INNER_PHI:.*]] = phi i32 [ %[[A]], %loop_begin ], [ %[[A2:.*]], %inner_inner_loop_exit ]
 ; CHECK-NEXT:    %[[COND:.*]] = load i1, i1* %cond.ptr
 ; CHECK-NEXT:    %[[B:.*]] = load i32, i32* %b.ptr
-; CHECK-NEXT:    br i1 %[[COND]], label %inner_loop_begin.split.us, label %inner_loop_begin.split
+; CHECK-NEXT:    %[[COND_FR:.*]] = freeze i1 %[[COND]]
+; CHECK-NEXT:    br i1 %[[COND_FR]], label %inner_loop_begin.split.us, label %inner_loop_begin.split
 
 inner_inner_loop_begin:
   %v1 = load i1, i1* %ptr
@@ -967,7 +968,8 @@ inner_loop_begin:
 ; CHECK-NEXT:    %[[A_INNER_PHI:.*]] = phi i32 [ %[[A]], %loop_begin ], [ %[[A2:.*]], %inner_inner_loop_exit ]
 ; CHECK-NEXT:    %[[COND:.*]] = load i1, i1* %cond.ptr
 ; CHECK-NEXT:    %[[B:.*]] = load i32, i32* %b.ptr
-; CHECK-NEXT:    br i1 %[[COND]], label %inner_loop_begin.split.us, label %inner_loop_begin.split
+; CHECK-NEXT:    %[[COND_FR:.*]] = freeze i1 %[[COND]]
+; CHECK-NEXT:    br i1 %[[COND_FR]], label %inner_loop_begin.split.us, label %inner_loop_begin.split
 
 inner_inner_loop_begin:
   %v1 = load i1, i1* %ptr
