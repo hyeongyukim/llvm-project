@@ -2139,7 +2139,7 @@ static void unswitchNontrivialInvariants(
       BI->setSuccessor(ClonedSucc, ClonedPH);
       BI->setSuccessor(1 - ClonedSucc, LoopPH);
       
-      if(insrtFreeze) {
+      if(insertFreeze) {
         auto Cond = BI->getCondition();
         if (!isGuaranteedNotToBeUndefOrPoison(Cond, &AC, NewTI, &DT))
           BI->setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", BI));
@@ -2159,9 +2159,11 @@ static void unswitchNontrivialInvariants(
         else
           Case.setSuccessor(ClonedPHs.find(Case.getCaseSuccessor())->second);
 
-      auto Cond = BI->getCondition();
-      if (!isGuaranteedNotToBeUndefOrPoison(Cond, &AC, NewTI, &DT))
-        BI->setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", BI));
+      if(insertFreeze) {
+        auto Cond = BI->getCondition();
+        if (!isGuaranteedNotToBeUndefOrPoison(Cond, &AC, NewTI, &DT))
+          BI->setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", BI));
+      }
 
       // We need to use the set to populate domtree updates as even when there
       // are multiple cases pointing at the same successor we only want to
