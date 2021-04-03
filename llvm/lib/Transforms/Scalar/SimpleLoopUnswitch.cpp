@@ -2139,9 +2139,11 @@ static void unswitchNontrivialInvariants(
       BI->setSuccessor(ClonedSucc, ClonedPH);
       BI->setSuccessor(1 - ClonedSucc, LoopPH);
       
-      auto Cond = BI->getCondition();
-      if (!isGuaranteedNotToBeUndefOrPoison(Cond, &AC, NewTI, &DT))
-        BI->setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", BI));
+      if(insrtFreeze) {
+        auto Cond = BI->getCondition();
+        if (!isGuaranteedNotToBeUndefOrPoison(Cond, &AC, NewTI, &DT))
+          BI->setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", BI));
+      }
 
       DTUpdates.push_back({DominatorTree::Insert, SplitBB, ClonedPH});
     } else {
