@@ -2059,6 +2059,11 @@ static void unswitchNontrivialInvariants(
       SE->forgetTopmostLoop(&L);
   }
 
+    ICFLoopSafetyInfo SafetyInfo(&DT);
+    SafetyInfo.computeLoopSafetyInfo(&L);
+    bool insertFreeze = !SafetyInfo.isGuaranteedToExecute(TI, &DT, &L);
+
+
   // If the edge from this terminator to a successor dominates that successor,
   // store a map from each block in its dominator subtree to it. This lets us
   // tell when cloning for a particular successor if a block is dominated by
