@@ -194,11 +194,14 @@ static void buildPartialUnswitchConditionalBranch(BasicBlock &BB,
                                                   ArrayRef<Value *> Invariants,
                                                   bool Direction,
                                                   BasicBlock &UnswitchedSucc,
-                                                  BasicBlock &NormalSucc) {
+                                                  BasicBlock &NormalSucc,
+						  bool insertFreeze) {
   IRBuilder<> IRB(&BB);
 
   Value *Cond = Direction ? IRB.CreateOr(Invariants) :
     IRB.CreateAnd(Invariants);
+  if (insertFreeze)
+    Cond = IRB.CreateFreeze(Cond, Cond->getName() + ".fr");
   IRB.CreateCondBr(Cond, Direction ? &UnswitchedSucc : &NormalSucc,
                    Direction ? &NormalSucc : &UnswitchedSucc);
 }
@@ -512,7 +515,7 @@ static bool unswitchTrivialBranch(Loop &L, BranchInst &BI, DominatorTree &DT,
              "Must have an `and` of `i1`s or `select i1 X, Y, false`s for the"
              " condition!");
     buildPartialUnswitchConditionalBranch(*OldPH, Invariants, ExitDirection,
-                                          *UnswitchedBB, *NewPH);
+                                          *UnswitchedBB, *NewPH, false);
   }
 
   // Update the dominator tree with the added edge.
@@ -2241,7 +2244,7 @@ static void unswitchNontrivialInvariants(
     // When doing a partial unswitch, we have to do a bit more work to build up
     // the branch in the split block.
     buildPartialUnswitchConditionalBranch(*SplitBB, Invariants, Direction,
-                                          *ClonedPH, *LoopPH);
+                                          *ClonedPH, *LoopPH, insertFreeze);
     DTUpdates.push_back({DominatorTree::Insert, SplitBB, ClonedPH});
 
     if (MSSAU) {
