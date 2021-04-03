@@ -389,10 +389,6 @@ static bool unswitchTrivialBranch(Loop &L, BranchInst &BI, DominatorTree &DT,
   // some input conditions to the branch.
   bool FullUnswitch = false;
 
-  auto Cond = BI.getCondition();
-  if (!isGuaranteedNotToBeUndefOrPoison(Cond))
-    BI.setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", &BI));
-
   if (L.isLoopInvariant(BI.getCondition())) {
     Invariants.push_back(BI.getCondition());
     FullUnswitch = true;
@@ -1982,10 +1978,6 @@ static void unswitchNontrivialInvariants(
          "Can only unswitch switches and conditional branch!");
   bool FullUnswitch = SI || BI->getCondition() == Invariants[0];
 
-  auto Cond = BI->getCondition();
-  if (!isGuaranteedNotToBeUndefOrPoison(Cond))
-    BI->setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", BI));
-
   if (FullUnswitch)
     assert(Invariants.size() == 1 &&
            "Cannot have other invariants with full unswitching!");
@@ -2141,6 +2133,11 @@ static void unswitchNontrivialInvariants(
       BasicBlock *ClonedPH = ClonedPHs.begin()->second;
       BI->setSuccessor(ClonedSucc, ClonedPH);
       BI->setSuccessor(1 - ClonedSucc, LoopPH);
+      
+      auto Cond = BI->getCondition();
+      if (!isGuaranteedNotToBeUndefOrPoison(Cond, &AC, NewTI, &DT))
+        BI->setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", BI));
+
       DTUpdates.push_back({DominatorTree::Insert, SplitBB, ClonedPH});
     } else {
       assert(SI && "Must either be a branch or switch!");
@@ -2154,6 +2151,10 @@ static void unswitchNontrivialInvariants(
           Case.setSuccessor(LoopPH);
         else
           Case.setSuccessor(ClonedPHs.find(Case.getCaseSuccessor())->second);
+
+      auto Cond = BI->getCondition();
+      if (!isGuaranteedNotToBeUndefOrPoison(Cond, &AC, NewTI, &DT))
+        BI->setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", BI));
 
       // We need to use the set to populate domtree updates as even when there
       // are multiple cases pointing at the same successor we only want to
