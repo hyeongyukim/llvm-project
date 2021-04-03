@@ -2144,7 +2144,7 @@ static void unswitchNontrivialInvariants(
       
       if(insertFreeze) {
         auto Cond = BI->getCondition();
-        if (!isGuaranteedNotToBeUndefOrPoison(Cond, &AC, NewTI, &DT))
+        if (!isGuaranteedNotToBeUndefOrPoison(Cond))
           BI->setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", BI));
       }
 
@@ -2164,7 +2164,7 @@ static void unswitchNontrivialInvariants(
 
       if(insertFreeze) {
         auto Cond = BI->getCondition();
-        if (!isGuaranteedNotToBeUndefOrPoison(Cond, &AC, NewTI, &DT))
+        if (!isGuaranteedNotToBeUndefOrPoison(Cond))
           BI->setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", BI));
       }
 
