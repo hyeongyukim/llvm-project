@@ -2059,7 +2059,7 @@ static void unswitchNontrivialInvariants(
       SE->forgetTopmostLoop(&L);
   }
 
-    ICFLoopSafetyInfo SafetyInfo(DT);
+    ICFLoopSafetyInfo SafetyInfo;
     SafetyInfo.computeLoopSafetyInfo(&L);
     bool insertFreeze = !SafetyInfo.isGuaranteedToExecute(TI, &DT, &L);
 
