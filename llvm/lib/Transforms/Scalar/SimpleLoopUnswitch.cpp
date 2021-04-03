@@ -2163,9 +2163,9 @@ static void unswitchNontrivialInvariants(
           Case.setSuccessor(ClonedPHs.find(Case.getCaseSuccessor())->second);
 
       if(insertFreeze) {
-        auto Cond = BI->getCondition();
+        auto Cond = SI->getCondition();
         if (!isGuaranteedNotToBeUndefOrPoison(Cond))
-          BI->setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", BI));
+          SI->setCondition(new FreezeInst(Cond, Cond->getName() + ".fr", SI));
       }
 
       // We need to use the set to populate domtree updates as even when there
